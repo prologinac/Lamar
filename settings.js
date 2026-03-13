@@ -22,7 +22,7 @@ const settings = {
   description: "This is a bot for managing group commands and automating tasks.",
   
   // Update Settings
-  updateZipUrl: "https://github.com/Sila-Md/SILA-MD/archive/refs/heads/main.zip",
+  updateZipUrl: "https://github.com/prologinac/lamar/tree/main",
   
   // Channel & Group Settings
   newsletterJid: "120363402325089913@newsletter",
