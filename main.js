@@ -1,3 +1,4 @@
+const apkCommand = require('./commands/apk');
 const updateCommand = require('./commands/update');
 const pttCommand = require('./commands/ptt');
 const saveStatus = require('./commands/saveStatus');
@@ -486,6 +487,10 @@ case userMessage.startsWith('.update'):
                     await sock.sendMessage(chatId, { text: 'Failed to update bot access mode', ...channelInfo });
                 }
                 break;
+        case 'apk':
+        case 'downloadapk':
+            await apkCommand(sock, chatId, message, args);
+            break;
             case userMessage.startsWith('.anticall'):
                 if (!message.key.fromMe && !senderIsSudo) {
                     await sock.sendMessage(chatId, { text: 'Only owner/sudo can use anticall.' }, { quoted: message });
