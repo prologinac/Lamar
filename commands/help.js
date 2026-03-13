@@ -1,42 +1,28 @@
 const settings = require('../settings');
-const fs = require('fs');
-const path = require('path');
+const os = require('os');
 
 async function helpCommand(sock, chatId, message, pushname, config) {
-    // Hakikisha config ipo, iwapo haipo tumia default
+    // Basic Configuration
     const prefix = config && config.PREFIX ? config.PREFIX : '.';
     const mode = settings.mode || '𝙿𝚄𝙱𝙻𝙸𝙲';
     const version = settings.version || '𝟹.𝟶.𝟶';
-   const os = require('os');
-       // Technical Calculations
+    
+    // Technical Calculations
+    const uptime = process.uptime();
+    const hours = Math.floor(uptime / 3600);
+    const minutes = Math.floor((uptime % 3600) / 60);
+    const ramUsage = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(1);
 
-        const uptime = process.uptime();
-
-        const hours = Math.floor(uptime / 3600);
-
-        const minutes = Math.floor((uptime % 3600) / 60);
-
-        const ramUsage = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(1);
-
-        // Legendary Rank Generator
-
-        const ranks = ['SYSTEM OVERLORD', 'GRANDMASTER', 'CHIEF ARCHITECT', 'ROOT EXECUTOR', 'NEURAL WHISPERER', 'DARK NODE ADMIN'];
-
-        const userRank = ranks[Math.floor(Math.random() * ranks.length)];
-
-        // Legendary Metrics
-
-        const ping = Math.floor(Math.random() * (45 - 12) + 12); 
-
-        const kernel = `6.2.0-MADRIN-PRO-${Math.floor(1000 + Math.random() * 9000)}`;
-
-        const integrity = (Math.random() * (100 - 99.8) + 99.8).toFixed(3);
+    // Legendary Rank & Metrics
+    const ranks = ['SYSTEM OVERLORD', 'GRANDMASTER', 'CHIEF ARCHITECT', 'ROOT EXECUTOR', 'NEURAL WHISPERER', 'DARK NODE ADMIN'];
+    const userRank = ranks[Math.floor(Math.random() * ranks.length)];
+    const ping = Math.floor(Math.random() * (45 - 12) + 12); 
+    const kernel = `6.2.0-MADRIN-PRO-${Math.floor(1000 + Math.random() * 9000)}`;
+    const integrity = (Math.random() * (100 - 99.8) + 99.8).toFixed(3);
        
-         
-const helpMessage = `
-
+    const helpMessage = `
     *╭═══════════════════════╗*
-*         𖣘 ᗰᗩᗪᖇIᑎ_ᗰᗪ 𖣘*
+*        𖣘 ᗰᗩᗪᖇIᑎ ᗰᗪ 𖣘*
     *╰═══════════════════════╝*
     *◊◈◊◊◊◊◊       ⎚⎚  ⎚⎚     ◊◊◊◊◊◈◊*
 *┃ ╔═══════════════════════════╗*
@@ -60,268 +46,79 @@ const helpMessage = `
 *╭══════════════════════⟡*
 *┃⚙️ ❚❚ ɢᴇɴᴇʀᴀʟ ᴄᴏᴍᴍᴀɴᴅ ❚❚ ⚙️ *
 *╰══════════════════════⟡*
-*┃☬ .𝗵𝗲𝗹𝗽 / .𝗺𝗲𝗻𝘂*
-*┃☬ .𝗽𝗶𝗻𝗴*
-*┃☬ .𝗮𝗹𝗶𝘃𝗲*
-*┃☬ .𝘁𝘁𝘀 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝗼𝘄𝗻𝗲𝗿*
-*┃☬ .𝗷𝗼𝗸𝗲*
-*┃☬ .𝗾𝘂𝗼𝘁𝗲*
-*┃☬ .𝗳𝗮𝗰𝘁*
-*┃☬ .𝘄𝗲𝗮𝘁𝗵𝗲𝗿 <𝘤𝘪𝘵𝘺>*
-*┃☬ .𝗻𝗲𝘄𝘀*
-*┃☬ .𝗮𝘁𝘁𝗽 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝗹𝘆𝗿𝗶𝗰𝘀 <𝘴𝘰𝘯𝘨_𝘵𝘪𝘵𝘭𝘦>*
-*┃☬ .8𝗯𝗮𝗹𝗹 <𝘲𝘶𝘦𝘴𝘵𝘰𝘯𝘴>*
-*┃☬ .𝗴𝗿𝗼𝘂𝗽𝗶𝗻𝗳𝗼*
-*┃☬ .𝘀𝘁𝗮𝗳𝗳 / .𝗮𝗱𝗺𝗶𝗻𝘀*
-*┃☬ .𝘃𝘃*
-*┃☬ .𝘁𝗿𝘁 <𝘵𝘦𝘹𝘵> <𝘭𝘢𝘯𝘨𝘶𝘢𝘨𝘦>*
-*┃☬ .𝘀𝘀 <𝘭𝘪𝘯𝘬>*
-*┃☬ .𝗷𝗶𝗱*
-*┃☬ .𝘂𝗿𝗹*
-*╰─────────────────⟡*
 
 *╭══════════════════════⟡*
 *┃😎 ❚❚ ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs ❚❚ 😎 *
 *╰══════════════════════⟡*
-*┃☬ .𝗯𝗮𝗻 @𝘶𝘴𝘦𝘳*
-*┃☬ .𝗽𝗿𝗼𝗺𝗼𝘁𝗲 @𝘶𝘴𝘦𝘳*
-*┃☬ .𝗱𝗲𝗺𝗼𝘁𝗲 @𝘶𝘴𝘦𝘳*
-*┃☬ .𝗺𝘂𝘁𝗲 <𝘮𝘪𝘯𝘶𝘵𝘦𝘴>*
-*┃☬ .𝘂𝗻𝗺𝘂𝘁𝗲*
-*┃☬ .𝗱𝗲𝗹𝗲𝘁𝗲 / .𝗱𝗲𝗹*
-*┃☬ .𝗸𝗶𝗰𝗸 @𝘶𝘴𝘦𝘳*
-*┃☬ .𝘄𝗮𝗿𝗻𝗶𝗻𝗴𝘀 @𝘶𝘴𝘦𝘳*
-*┃☬ .𝘄𝗮𝗿𝗻 @𝘶𝘴𝘦𝘳*
-*┃☬ .𝗮𝗻𝘁𝗶𝗹𝗶𝗻𝗸*
-*┃☬ .𝗮𝗻𝘁𝗶𝗯𝗮𝗱𝘄𝗼𝗿𝗱*
-*┃☬ .𝗰𝗹𝗲𝗮𝗿*
-*┃☬ .𝘁𝗮𝗴 <𝘮𝘦𝘴𝘴𝘢𝘨𝘦>*
-*┃☬ .𝘁𝗮𝗴𝗮𝗹𝗹*
-*┃☬ .𝘁𝗮𝗴𝗻𝗼𝘁𝗮𝗱𝗺𝗶𝗻*
-*┃☬ .𝗵𝗶𝗱𝗲𝘁𝗮𝗴 <𝘮𝘦𝘴𝘴𝘢𝘨𝘦>*
-*┃☬ .𝗰𝗵𝗮𝘁𝗯𝗼𝘁*
-*┃☬ .𝗿𝗲𝘀𝗲𝘁𝗹𝗶𝗻𝗸*
-*┃☬ .𝗮𝗻𝘁𝗶𝘁𝗮𝗴 <𝘰𝘯/𝘰𝘧𝘧>*
-*┃☬ .𝘄𝗲𝗹𝗰𝗼𝗺𝗲 <𝘰𝘯/𝘰𝘧𝘧>*
-*┃☬ .𝗴𝗼𝗼𝗱𝗯𝘆𝗲 <𝘰𝘯/𝘰𝘧𝘧>*
-*┃☬ .𝘀𝗲𝘁𝗴𝗱𝗲𝘀𝗰 <𝘥𝘦𝘴𝘤𝘳𝘪𝘱𝘵𝘪𝘰𝘯>*
-*┃☬ .𝘀𝗲𝘁𝗴𝗻𝗮𝗺𝗲 <𝘯𝘦𝘸 𝘯𝘢𝘮𝘦>*
-*┃☬ .𝘀𝗲𝘁𝗴𝗽𝗽 (𝘳𝘦𝘱𝘭𝘺 𝘵𝘰 𝘪𝘮𝘢𝘨𝘦)*
-*╰─────────────────⟡*
- 
+
 *╭══════════════════════⟡*
 *┃🦾 ❚❚ ᴏᴡɴᴇʀ ᴄᴏᴍᴍᴀɴᴅs ❚❚ 🦾*
 *╰══════════════════════⟡*
-*┃☬ .𝗺𝗼𝗱𝗲 <𝘱𝘶𝘣𝘭𝘪𝘤/𝘱𝘳𝘪𝘷𝘢𝘵𝘦>*
-*┃☬ .𝗰𝗹𝗲𝗮𝗿𝘀𝗲𝘀𝘀𝗶𝗼𝗻*
-*┃☬ .𝗮𝗻𝘁𝗶𝗱𝗲𝗹𝗲𝘁𝗲*
-*┃☬ .𝗰𝗹𝗲𝗮𝗿𝘁𝗺𝗽*
-*┃☬ .𝘀𝗲𝘁𝘁𝗶𝗻𝗴𝘀*
-*┃☬ .𝘀𝗲𝘁𝗽𝗽 <𝘳𝘦𝘱𝘭𝘺 𝘵𝘰 𝘪𝘮𝘢𝘨𝘦>*
-*┃☬ .𝗮𝘂𝘁𝗼𝗿𝗲𝗮𝗰𝘁 <𝘰𝘯/𝘰𝘧𝘧>*
-*┃☬ .𝗮𝘂𝘁𝗼𝘀𝘁𝗮𝘁𝘂𝘀 <𝘰𝘯/𝘰𝘧𝘧>*
-*┃☬ .𝗮𝘂𝘁𝗼𝘀𝘁𝗮𝘁𝘂𝘀 𝗿𝗲𝗮𝗰𝘁 <𝘰𝘯/𝘰𝘧𝘧>*
-*┃☬ .𝗮𝘂𝘁𝗼𝘁𝘆𝗽𝗶𝗻𝗴 <𝘰𝘯/𝘰𝘧𝘧>*
-*┃☬ .𝗮𝘂𝘁𝗼𝗿𝗲𝗮𝗱 <𝘰𝘯/𝘰𝘧𝘧>*
-*┃☬ .𝗮𝗻𝘁𝗶𝗰𝗮𝗹𝗹 <𝘰𝘯/𝘰𝘧𝘧>*
-*┃☬ .𝗽𝗺𝗯𝗹𝗼𝗰𝗸𝗲𝗿 <𝘰𝘯/𝘰𝘧𝘧/𝘴𝘵𝘢𝘵𝘶𝘴>*
-*┃☬ .𝗽𝗺𝗯𝗹𝗼𝗰𝗸𝗲𝗿 𝘀𝗲𝘁𝗺𝘀𝗴 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝘀𝗲𝘁𝗺𝗲𝗻𝘁𝗶𝗼𝗻 <𝘳𝘦𝘱𝘭𝘺 𝘵𝘰 𝘮𝘦𝘴𝘴𝘢𝘨𝘦>*
-*┃☬ .𝗺𝗲𝗻𝘁𝗶𝗼𝗻 <𝘰𝘯/𝘰𝘧𝘧>*
-*╰─────────────────⟡*
 
 *╭═════════════════════════⟡*
 *┃ 🗺️ ❚❚ ɪᴍᴀɢᴇ/sᴛɪᴄᴋᴇʀ ᴄᴏᴍᴍᴀɴᴅs ❚❚ 🗺️*
 *╰═════════════════════════⟡*
-*┃☬ .𝗯𝗹𝘂𝗿 <𝘪𝘮𝘢𝘨𝘦>*
-*┃☬ .𝘀𝗶𝗺𝗮𝗴𝗲 <𝘳𝘦𝘱𝘭𝘺 𝘵𝘰 𝘴𝘵𝘪𝘤𝘬𝘦𝘳>*
-*┃☬ .𝘀𝘁𝗶𝗰𝗸𝗲𝗿 <𝘳𝘦𝘱𝘭𝘺 𝘵𝘰 𝘪𝘮𝘢𝘨𝘦>*
-*┃☬ .𝗿𝗲𝗺𝗼𝘃𝗲𝗯𝗴*
-*┃☬ .𝗿𝗲𝗺𝗶𝗻𝗶*
-*┃☬ .𝗰𝗿𝗼𝗽 <𝘳𝘦𝘱𝘭𝘺 𝘵𝘰 𝘪𝘮𝘢𝘨𝘦>*
-*┃☬ .𝘁𝗴𝘀𝘁𝗶𝗰𝗸𝗲𝗿 <𝘭𝘪𝘯𝘬>*
-*┃☬ .𝗺𝗲𝗺𝗲*
-*┃☬ .𝘁𝗮𝗸𝗲 <𝘱𝘢𝘤𝘬𝘯𝘢𝘮𝘦>*
-*┃☬ .𝗲𝗺𝗼𝗷𝗶𝗺𝗶𝘅 <𝘦𝘮𝘫1>+<𝘦𝘮𝘫2>*
-*┃☬ .𝗶𝗴𝘀<𝘪𝘯𝘴𝘵𝘢 𝘭𝘪𝘯𝘬>*
-*┃☬ .𝗶𝗴𝘀𝗰 <𝘪𝘯𝘴𝘵𝘢 𝘭𝘪𝘯𝘬>*
-*╰───────────────────⟡*
 
 *╭══════════════════════⟡*
 *┃ 😍 ❚❚ ᴘɪᴇs ᴄᴏᴍᴍᴀɴᴅs ❚❚ 😍 *
 *╰══════════════════════⟡*
-*┃☬ .𝗽𝗶𝗲𝘀 <𝘤𝘰𝘶𝘯𝘵𝘳𝘺>*
-*┃☬ .𝗰𝗵𝗶𝗻𝗮*
-*┃☬ .𝗶𝗻𝗱𝗼𝗻𝗲𝘀𝗶𝗮*
-*┃☬ .𝗷𝗮𝗽𝗮𝗻*
-*┃☬ .𝗸𝗼𝗿𝗲𝗮*
-*┃☬ .𝗵𝗶𝗷𝗮𝗯*
-*╰─────────────────⟡*
 
 *╭══════════════════════⟡*
 *┃💡 ❚❚ ɢᴀᴍᴇ ᴄᴏᴍᴍᴀɴᴅs ❚❚ 💡〕*
 *╰══════════════════════⟡*
-*┃☬ .𝘁𝗶𝗰𝘁𝗮𝘁𝗼𝗲 @𝘶𝘴𝘦𝘳*
-*┃☬ .𝗵𝗮𝗻𝗴𝗺𝗮𝗻*
-*┃☬ .𝗴𝘂𝗲𝘀𝘀 <𝘭𝘦𝘵𝘵𝘦𝘳>*
-*┃☬ .𝘁𝗿𝗶𝘃𝗶𝗮*
-*┃☬ .𝗮𝗻𝘀𝘄𝗲𝗿 <𝘢𝘯𝘴𝘸𝘦𝘳>*
-*┃☬ .𝘁𝗿𝘂𝘁𝗵*
-*┃☬ .𝗱𝗮𝗿𝗲*
-*╰─────────────────⟡*
 
 *╭══════════════════════⟡*
 *┃ 🌝 ❚❚ ᴀɪ ᴄᴏᴍᴍᴀɴᴅs ❚❚ 🌝 *
 *╰══════════════════════⟡*
-*┃☬ .𝗴𝗽𝘁 <𝘲𝘶𝘦𝘴𝘵𝘪𝘰𝘯>*
-*┃☬ .𝗴𝗲𝗺𝗶𝗻𝗶 <𝘲𝘶𝘦𝘴𝘵𝘪𝘰𝘯>*
-*┃☬ .𝗶𝗺𝗮𝗴𝗶𝗻𝗲 <𝘱𝘳𝘰𝘮𝘱𝘵>*
-*┃☬ .𝗳𝗹𝘂𝘅 <𝘱𝘳𝘰𝘮𝘱𝘵>*
-*┃☬ .𝘀𝗼𝗿𝗮 <𝘱𝘳𝘰𝘮𝘱𝘵>*
-*╰─────────────────⟡*
 
 *╭══════════════════════⟡*
 *┃🤪 ❚❚ ғᴜɴ ᴄᴏᴍᴍᴀɴᴅs ❚❚ 🤪 *
 *╰══════════════════════⟡*
-*┃☬ .𝗰𝗼𝗺𝗽𝗹𝗶𝗺𝗲𝗻𝘁 @𝘶𝘴𝘦𝘳*
-*┃☬ .𝗶𝗻𝘀𝘂𝗹𝘁 @𝘶𝘴𝘦𝘳*
-*┃☬ .𝗳𝗹𝗶𝗿𝘁*
-*┃☬ .𝘀𝗵𝗮𝘆𝗮𝗿𝗶*
-*┃☬ .𝗴𝗼𝗼𝗱𝗻𝗶𝗴𝗵𝘁*
-*┃☬ .𝗿𝗼𝘀𝗲𝗱𝗮𝘆*
-*┃☬ .𝗰𝗵𝗮𝗿𝗮𝗰𝘁𝗲𝗿 @𝘶𝘴𝘦𝘳*
-*┃☬ .𝘄𝗮𝘀𝘁𝗲𝗱 @𝘶𝘴𝘦𝘳*
-*┃☬ .𝘀𝗶𝗺𝗽 @𝘶𝘴𝘦𝘳*
-*┃☬ .𝘀𝗵𝗶𝗽 @𝘶𝘴𝘦𝘳*
-*┃☬ .𝘀𝘁𝘂𝗽𝗶𝗱 @𝘶𝘴𝘦𝘳 [𝘵𝘦𝘹𝘵]*
-*╰─────────────────⟡*
 
 *╭══════════════════════⟡*
 *┃ 📓 ❚❚ ᴛᴇxᴛᴍᴀᴋᴇʀ ❚❚ 📓*
 *╰══════════════════════⟡*
-*┃☬ .𝗺𝗲𝘁𝗮𝗹𝗹𝗶𝗰 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝗶𝗰𝗲 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝘀𝗻𝗼𝘄 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝗶𝗺𝗽𝗿𝗲𝘀𝘀𝗶𝘃𝗲 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝗺𝗮𝘁𝗿𝗶𝘅 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝗹𝗶𝗴𝗵𝘁 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝗻𝗲𝗼𝗻 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝗱𝗲𝘃𝗶𝗹 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝗽𝘂𝗿𝗽𝗹𝗲 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝘁𝗵𝘂𝗻𝗱𝗲𝗿 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝗹𝗲𝗮𝘃𝗲𝘀 <𝘵𝘦𝘹𝘵>*
-*┃☬ .1917 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝗮𝗿𝗲𝗻𝗮 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝗵𝗮𝗰𝗸𝗲𝗿 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝘀𝗮𝗻𝗱 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝗯𝗹𝗮𝗰𝗸𝗽𝗶𝗻𝗸 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝗴𝗹𝗶𝘁𝗰𝗵 <𝘵𝘦𝘹𝘵>*
-*┃☬ .𝗳𝗶𝗿𝗲 <𝘵𝘦𝘹𝘵>*
-*╰─────────────────⟡*
 
 *╭══════════════════════⟡*
 *┃ 🎬 ❚❚ ᴅᴏᴡɴʟᴏᴀᴅᴇʀ ❚❚ 🎬*
 *╰══════════════════════⟡*
-*┃☬ .𝗽𝗹𝗮𝘆 <𝘴𝘰𝘯𝘨_𝘯𝘢𝘮𝘦>*
-*┃☬ .𝘀𝗼𝗻𝗴 <𝘴𝘰𝘯𝘨_𝘯𝘢𝘮𝘦>*
-*┃☬ .𝘀𝗽𝗼𝘁𝗶𝗳𝘆 <𝘲𝘶𝘦𝘳𝘺>*
-*┃☬ .𝗶𝗻𝘀𝘁𝗮𝗴𝗿𝗮𝗺 <𝘭𝘪𝘯𝘬>*
-*┃☬ .𝗳𝗮𝗰𝗲𝗯𝗼𝗼𝗸 <𝘭𝘪𝘯𝘬>*
-*┃☬ .𝘁𝗶𝗸𝘁𝗼𝗸 <𝘭𝘪𝘯𝘬>*
-*┃☬ .𝘃𝗶𝗱𝗲𝗼 <𝘴𝘰𝘯𝘨_𝘯𝘢𝘮𝘦>*
-*┃☬ .𝘆𝘁𝗺𝗽4 <𝘭𝘪𝘯𝘬>/𝘯𝘢𝘮𝘦*
-*┃☬ .𝘆𝘁𝗺𝗽3 <𝘭𝘪𝘯𝘬>/𝘯𝘢𝘮𝘦*
-*╰─────────────────⟡*
 
 *╭══════════════════════⟡*
 *┃🎒 ❚❚ ᴍɪsᴄ ❚❚ 🎒*
 *╰══════════════════════⟡*
-*┃☬ .𝗵𝗲𝗮𝗿𝘁*
-*┃☬ .𝗵𝗼𝗿𝗻𝘆*
-*┃☬ .𝗰𝗶𝗿𝗰𝗹𝗲*
-*┃☬ .𝗹𝗴𝗯𝘁*
-*┃☬ .𝗹𝗼𝗹𝗶𝗰𝗲*
-*┃☬ .𝗶𝘁𝘀-𝘀𝗼-𝘀𝘁𝘂𝗽𝗶𝗱*
-*┃☬ .𝗻𝗮𝗺𝗲𝗰𝗮𝗿𝗱*
-*┃☬ .𝗼𝗼𝗴𝘄𝗮𝘆*
-*┃☬ .𝘁𝘄𝗲𝗲𝘁*
-*┃☬ .𝘆𝘁𝗰𝗼𝗺𝗺𝗲𝗻𝘁*
-*┃☬ .𝗰𝗼𝗺𝗿𝗮𝗱𝗲*
-*┃☬ .𝗴𝗮𝘆*
-*┃☬ .𝗴𝗹𝗮𝘀𝘀*
-*┃☬ .𝗷𝗮𝗶𝗹*
-*┃☬ .𝗽𝗮𝘀𝘀𝗲𝗱*
-*┃☬ .𝘁𝗿𝗶𝗴𝗴𝗲𝗿𝗲𝗱*
-*╰─────────────────⟡*
 
 *╭══════════════════════⟡*
 *┃🎎 ❚❚ ᴀɴɪᴍᴇ ❚❚🎎 *
 *╰══════════════════════⟡*
-*┃☬ .𝗻𝗲𝗸𝗶*
-*┃☬ .𝘄𝗮𝗶𝗳𝘂*
-*┃☬ .𝗹𝗼𝗹𝗶*
-*┃☬ .𝗻𝗼𝗺*
-*┃☬ .𝗽𝗼𝗸𝗲*
-*┃☬ .𝗰𝗿𝘆*
-*┃☬ .𝗸𝗶𝘀𝘀*
-*┃☬ .𝗽𝗮𝘁*
-*┃☬ .𝗵𝘂𝗴*
-*┃☬ .𝘄𝗶𝗻𝗸*
-*┃☬ .𝗳𝗮𝗰𝗲𝗽𝗮𝗹𝗺*
-*╰─────────────────⟡*
 
 *╭══════════════════════⟡*
 *┃🗝️ ❚❚ ɢɪᴛʜᴜʙ ❚❚🗝️*
 *╰══════════════════════⟡*
-*┃☬ • .𝗴𝗶𝘁*
-*┃☬ .𝗴𝗶𝘁𝗵𝘂𝗯*
-*┃☬ .𝘀𝗰*
-*┃☬ .𝘀𝗰𝗿𝗶𝗽𝘁*
-*┃☬ .𝗿𝗲𝗽𝗼*
-*╰─────────────────⟡*
-
 
 *ᑭOᗯᗴᖇᗴᗪ ᗷY ᗰᗩᗪᖇIᑎ ᗷOT Tᗴᑕᕼ*`;
 
     try {
-        const imagePath = path.join(__dirname, '../assets/bot_image.jpg');
-        
-        if (fs.existsSync(imagePath)) {
-            const imageBuffer = fs.readFileSync(imagePath);
-            
-            await sock.sendMessage(chatId, {
-                image: imageBuffer,
-                caption: helpMessage,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: false,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363402325089913@newsletter',
-                        newsletterName: 'MADRIN BOT',
-                        serverMessageId: -1
-                    }
+        // Using your Catbox URL directly
+        const imageUrl = 'https://files.catbox.moe/kg0u3p.jpg';
+
+        await sock.sendMessage(chatId, {
+            image: { url: imageUrl },
+            caption: helpMessage,
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: false,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363402325089913@newsletter',
+                    newsletterName: 'MADRIN BOT',
+                    serverMessageId: -1
                 }
-            },{ quoted: message });
-        } else {
-            console.error('Bot image not found at:', imagePath);
-            await sock.sendMessage(chatId, { 
-                text: helpMessage,
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: false,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363402325089913@newsletter',
-                        newsletterName: 'MADRIN BOT',
-                        serverMessageId: -1
-                    } 
-                }
-            });
-        }
+            }
+        }, { quoted: message });
+
     } catch (error) {
         console.error('Error in help command:', error);
-        await sock.sendMessage(chatId, { text: helpMessage });
+        // Fallback to text if the image fails to load
+        await sock.sendMessage(chatId, { text: helpMessage }, { quoted: message });
     }
 }
 
