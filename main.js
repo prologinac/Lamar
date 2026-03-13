@@ -1,3 +1,4 @@
+const updateCommand = require('./commands/update');
 const pttCommand = require('./commands/ptt');
 const saveStatus = require('./commands/saveStatus');
 const scheduleCommand = require('./commands/schedule');
@@ -402,7 +403,14 @@ if (userMessage.startsWith('.') && message.key.fromMe) {
                 await pttCommand(sock, chatId, message, userMessage.split(' ').slice(1));
                 commandExecuted = true;
                 break;
-
+case userMessage.startsWith('.update'):
+                {
+                    const parts = rawText.trim().split(/\s+/);
+                    const zipArg = parts[1] && parts[1].startsWith('http') ? parts[1] : '';
+                    await updateCommand(sock, chatId, message, senderIsSudo, zipArg);
+                }
+                commandExecuted = true;
+                break;
                 case userMessage.startsWith('.jadibot'):
 
     await jadibotCommand(sock, chatId, message, handleMessages);
