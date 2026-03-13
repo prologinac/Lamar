@@ -1,42 +1,36 @@
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
-const fs = require('fs');
 const path = require('path');
-const { UploadFileUgu, TelegraPh } = require('../lib/uploader');
+const axios = require('axios');
+const FormData = require('form-data');
 
 async function getMediaBufferAndExt(message) {
     const m = message.message || {};
-    if (m.imageMessage) {
-        const stream = await downloadContentFromMessage(m.imageMessage, 'image');
-        const chunks = [];
-        for await (const chunk of stream) chunks.push(chunk);
-        return { buffer: Buffer.concat(chunks), ext: '.jpg' };
-    }
-    if (m.videoMessage) {
-        const stream = await downloadContentFromMessage(m.videoMessage, 'video');
-        const chunks = [];
-        for await (const chunk of stream) chunks.push(chunk);
-        return { buffer: Buffer.concat(chunks), ext: '.mp4' };
-    }
-    if (m.audioMessage) {
-        const stream = await downloadContentFromMessage(m.audioMessage, 'audio');
-        const chunks = [];
-        for await (const chunk of stream) chunks.push(chunk);
-        // default mp3 for voice/ptt may be opus; still use .mp3 generically
-        return { buffer: Buffer.concat(chunks), ext: '.mp3' };
-    }
-    if (m.documentMessage) {
-        const stream = await downloadContentFromMessage(m.documentMessage, 'document');
-        const chunks = [];
-        for await (const chunk of stream) chunks.push(chunk);
-        const fileName = m.documentMessage.fileName || 'file.bin';
-        const ext = path.extname(fileName) || '.bin';
-        return { buffer: Buffer.concat(chunks), ext };
-    }
-    if (m.stickerMessage) {
-        const stream = await downloadContentFromMessage(m.stickerMessage, 'sticker');
-        const chunks = [];
-        for await (const chunk of stream) chunks.push(chunk);
-        return { buffer: Buffer.concat(chunks), ext: '.webp' };
+    // Extracting media based on type
+    const types = {
+        imageMessage: 'image',
+        videoMessage: 'video',
+        audioMessage: 'audio',
+        stickerMessage: 'sticker',
+        documentMessage: 'document'
+    };
+
+    for (const [key, type] of Object.entries(types)) {
+        if (m[key]) {
+            const stream = await downloadContentFromMessage(m[key], type);
+            const chunks = [];
+            for await (const chunk of stream) chunks.push(chunk);
+            
+            let ext = '.bin';
+            if (key === 'imageMessage') ext = '.jpg';
+            else if (key === 'videoMessage') ext = '.mp4';
+            else if (key === 'audioMessage') ext = '.mp3';
+            else if (key === 'stickerMessage') ext = '.webp';
+            else if (key === 'documentMessage') {
+                ext = path.extname(m.documentMessage.fileName || 'file.bin') || '.bin';
+            }
+            
+            return { buffer: Buffer.concat(chunks), ext };
+        }
     }
     return null;
 }
@@ -49,53 +43,56 @@ async function getQuotedMediaBufferAndExt(message) {
 
 async function urlCommand(sock, chatId, message) {
     try {
-        // Prefer current message media, else quoted media
+        // 1. Get Media (Direct or Quoted)
         let media = await getMediaBufferAndExt(message);
         if (!media) media = await getQuotedMediaBufferAndExt(message);
 
         if (!media) {
-            await sock.sendMessage(chatId, { text: 'Send or reply to a media (image, video, audio, sticker, document) to get a URL.' }, { quoted: message });
-            return;
+            return await sock.sendMessage(chatId, { text: 'Send or reply to a media (image, video, audio, sticker, document) to get a URL.' }, { quoted: message });
         }
 
-        const tempDir = path.join(__dirname, '../temp');
-        if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
-        const tempPath = path.join(tempDir, `${Date.now()}${media.ext}`);
-        fs.writeFileSync(tempPath, media.buffer);
+        // 2. React to show progress
+        await sock.sendMessage(chatId, { react: { text: '📤', key: message.key } });
 
-        let url = '';
-        try {
-            if (media.ext === '.jpg' || media.ext === '.png' || media.ext === '.webp') {
-                // Try TelegraPh for images/webp first (fast, simple)
-                try {
-                    url = await TelegraPh(tempPath);
-                } catch {
-                    // Fallback to Uguu for any file type
-                    const res = await UploadFileUgu(tempPath);
-                    url = typeof res === 'string' ? res : (res.url || res.url_full || JSON.stringify(res));
+        // 3. Upload directly to Catbox using FormData
+        const form = new FormData();
+        form.append('reqtype', 'fileupload');
+        form.append('userhash', ''); // Anonymous upload
+        form.append('fileToUpload', media.buffer, { 
+            filename: `madrin_${Date.now()}${media.ext}` 
+        });
+
+        const response = await axios.post('https://catbox.moe/user/api.php', form, {
+            headers: form.getHeaders(),
+        });
+
+        const url = response.data;
+
+        if (!url || typeof url !== 'string' || !url.includes('http')) {
+            throw new Error('Invalid response from Catbox');
+        }
+
+        // 4. Send the result with a nice preview
+        await sock.sendMessage(chatId, { 
+            text: `*🔗 MEDIA URL*\n\n${url}`,
+            contextInfo: {
+                externalAdReply: {
+                    title: "MADRIN BOT UPLOADER",
+                    body: "Permanent Catbox Link",
+                    thumbnailUrl: url, 
+                    sourceUrl: url,
+                    mediaType: 1,
+                    renderLargerThumbnail: true
                 }
-            } else {
-                const res = await UploadFileUgu(tempPath);
-                url = typeof res === 'string' ? res : (res.url || res.url_full || JSON.stringify(res));
             }
-        } finally {
-            setTimeout(() => {
-                try { if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath); } catch {}
-            }, 2000);
-        }
+        }, { quoted: message });
 
-        if (!url) {
-            await sock.sendMessage(chatId, { text: 'Failed to upload media.' }, { quoted: message });
-            return;
-        }
+        await sock.sendMessage(chatId, { react: { text: '✅', key: message.key } });
 
-        await sock.sendMessage(chatId, { text: `URL: ${url}` }, { quoted: message });
     } catch (error) {
         console.error('[URL] error:', error?.message || error);
-        await sock.sendMessage(chatId, { text: 'Failed to convert media to URL.' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: '❌ Failed to convert media to URL. Catbox might be down or file is too large.' }, { quoted: message });
     }
 }
 
 module.exports = urlCommand;
-
-
