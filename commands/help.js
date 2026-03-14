@@ -21,10 +21,10 @@ async function helpCommand(sock, chatId, message, pushname, config) {
     
        
     const helpMessage = `
-  *╭═══════════════════════╗*
-         𖣘 `ᗰᗩᗪᖇIᑎ_ᗰᗪ` 𖣘
-  *╰═══════════════════════╝*
- *◊◈◊◊◊◊◊       ⎚⎚  ⎚⎚     ◊◊◊◊◊◈◊*
+> *╭═══════════════════════╗*
+>       𖣘 ᗰᗩᗪᖇIᑎ_ᗰᗪ 𖣘
+> *╰═══════════════════════╝*
+> *◊◈◊◊◊◊◊       ⎚⎚  ⎚⎚     ◊◊◊◊◊◈◊*
 
 > ➤  User   Lamar☪︎
 > ➤  Rank   GRANDMASTER
@@ -37,7 +37,7 @@ async function helpCommand(sock, chatId, message, pushname, config) {
 > ➤ > Encrypt  QUANTUM-AES
 
 
-╔ `AVAILABLE COMMANDS` ╗
+> ╔ AVAILABLE COMMANDS ╗
 > 》owner comands
 > 》admin commands
 > 》general commands
@@ -51,7 +51,8 @@ async function helpCommand(sock, chatId, message, pushname, config) {
 > 》github commands
 > 》sticker/image commands
 > 》sweet commands
-╚⭑★⭑★⭑★⭑★⭑★⭑★⭑★⭑╝
+> ╚⭑★⭑★⭑★⭑★⭑★⭑★⭑★⭑╝
+
 > ᑭOᗯᗴᖇᗴᗪ ᗷY ᗰᗩᗪᖇIᑎ ᗷOT Tᗴᑕᕼ*`;
 
     try {
