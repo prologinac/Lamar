@@ -1,4 +1,4 @@
-require('./settings')
+const settings = require('./settings') // Loads your new settings object
 const { Boom } = require('@hapi/boom')
 const fs = require('fs')
 const chalk = require('chalk')
@@ -42,7 +42,7 @@ async function startMadrin() {
         version,
         logger: pino({ level: 'silent' }),
         printQRInTerminal: false,
-        browser: ["Windows", "Chrome", "114.0.5735.198"], // Matches your old working code
+        browser: ["Windows", "Chrome", "114.0.5735.198"],
         auth: {
             creds: state.creds,
             keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" })),
@@ -51,14 +51,15 @@ async function startMadrin() {
         syncFullHistory: false
     })
 
-    // PAIRING LOGIC (Using your old successful method)
+    // FIXED PAIRING LOGIC FOR YOUR SETTINGS OBJECT
     if (!Madrin.authState.creds.registered) {
-        let targetNumber = Array.isArray(global.ownerNumber) ? global.ownerNumber[0] : global.ownerNumber;
+        // We pull the number from the 'settings' constant you exported
+        let targetNumber = settings.ownerNumber || "255780309253"; 
         targetNumber = targetNumber.replace(/[^0-9]/g, '');
 
         console.log(chalk.yellow(`⏳ Handshaking for: ${targetNumber}...`));
         
-        // This 15s delay is what triggers the notification on your phone
+        // The 15s delay to trigger the WhatsApp notification
         await delay(15000); 
 
         try {
@@ -73,14 +74,13 @@ async function startMadrin() {
     Madrin.ev.on('connection.update', async (s) => {
         const { connection, lastDisconnect } = s;
         if (connection == "open") {
-            console.log(chalk.bgCyan.black(` ✅ MADRIN IS ONLINE! `));
+            console.log(chalk.bgCyan.black(` ✅ ${settings.botName.toUpperCase()} IS ONLINE! `));
             
-            // GENERATE AND SEND SESSION ID TO YOUR WHATSAPP
             const credsData = fs.readFileSync('./session/creds.json');
             const base64Session = Buffer.from(credsData).toString('base64');
             const fullSessionId = `MADRIN~${base64Session}`;
 
-            const msg = `*✅ MADRIN CONNECTED!*\n\nCopy this code to your Render Environment Variables for 24/7 uptime:\n\n\`${fullSessionId}\``;
+            const msg = `*✅ ${settings.botName.toUpperCase()} CONNECTED!*\n\nCopy this code to your Render Environment Variables for 24/7 uptime:\n\n\`${fullSessionId}\``;
             await Madrin.sendMessage(Madrin.user.id, { text: msg });
         }
         if (connection === 'close') {
