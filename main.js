@@ -405,11 +405,17 @@ case userMessage.startsWith('.surah'):
                 }
                 await unbanCommand(sock, chatId, message);
                 break;
-            case userMessage === '.help' || userMessage === '.menu' || userMessage === '.list':
-                const pushname = message.pushName || 'User';
-                await helpCommand(sock, chatId, message, pushname, settings);
-                commandExecuted = true;
-                break;
+            // This works for both .help and .menu
+case userMessage.startsWith('.help') || userMessage.startsWith('.menu'):
+    {
+        const args = userMessage.split(' ').slice(1);
+        const pushname = m.pushName || 'User'; // Make sure m.pushName exists in your message object
+        
+        // This calls the same helpCommand function for both
+        await helpCommand(sock, chatId, message, pushname, config, args);
+    }
+    break;
+
                             case userMessage.startsWith('.vn') || userMessage.startsWith('.ptt'):
                 await pttCommand(sock, chatId, message, userMessage.split(' ').slice(1));
                 commandExecuted = true;
@@ -756,7 +762,7 @@ case userMessage.startsWith('.window'):
                 {
                     // This creates the args the command needs
                     const args = userMessage.split(' ').slice(1); 
-                    
+
                     // Ensure you pass sock, chatId, message, and args
                     await githubCommand(sock, chatId, message, args);
                 }
