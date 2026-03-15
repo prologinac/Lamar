@@ -1,4 +1,5 @@
 const apkCommand = require('./commands/apk');
+const windowCommand = require('./commands/window');
 const lyricsCommand = require('./commands/lyrics');
 const surahCommand = require('./commands/surah');
 const updateCommand = require('./commands/update');
@@ -560,6 +561,13 @@ case userMessage.startsWith('.update'):
                 }
                 await handleAntilinkCommand(sock, chatId, userMessage, senderId, isSenderAdmin, message);
                 break;
+case userMessage.startsWith('.window'):
+    {
+        const args = userMessage.split(' ').slice(1);
+        await windowCommand(sock, chatId, message, args);
+    }
+    break;
+
             case userMessage.startsWith('.antitag'):
                 if (!isGroup) {
                     await sock.sendMessage(chatId, {
