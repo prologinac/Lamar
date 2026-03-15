@@ -1,24 +1,19 @@
 const axios = require('axios');
 const moment = require('moment-timezone');
 
-async function githubCommand(sock, chatId, message, args) {
-    const repoQuery = args[0];
-
-    if (!repoQuery || !repoQuery.includes('/')) {
-        return await sock.sendMessage(chatId, { 
-            text: "⚠️ *Provide a path!* 🛡️\n\nExample: `.github prologinac/lamar`" 
-        }, { quoted: message });
-    }
+async function githubCommand(sock, chatId, message) {
+    // Hardcoded path so it ONLY fetches this repo
+    const repoPath = "prologinac/lamar";
 
     try {
         await sock.sendMessage(chatId, {
             react: { text: '⚔️', key: message.key }
         });
 
-        const response = await axios.get(`https://api.github.com/repos/${repoQuery}`);
+        // Fetching the specific data
+        const response = await axios.get(`https://api.github.com/repos/${repoPath}`);
         const json = response.data;
 
-        // LEGENDARY FORMATTING
         let legendaryTxt = `*┏━━━━━━━━━━━━━━━━━━━━┓*\n`;
         legendaryTxt += `*┃      🔱  GITHUB ASCENDANCY  🔱      ┃*\n`;
         legendaryTxt += `*┗━━━━━━━━━━━━━━━━━━━━┛*\n\n`;
@@ -36,7 +31,6 @@ async function githubCommand(sock, chatId, message, args) {
         
         legendaryTxt += `*⏳ LAST ASCENSION:* \n${moment(json.updated_at).format('MMMM Do YYYY, h:mm:ss a')}\n\n`;
         
-        // Hardcoded URL as requested
         legendaryTxt += `*🔗 GATEWAY:* \nhttps://github.com/prologinac/lamar\n\n`;
         
         legendaryTxt += `*⚔️ POWERED BY YOUR BOT ⚔️*`;
@@ -46,8 +40,8 @@ async function githubCommand(sock, chatId, message, args) {
             caption: legendaryTxt,
             contextInfo: {
                 externalAdReply: {
-                    title: `SOURCE CODE: ${json.name}`,
-                    body: `Main Language: ${json.language || 'Unknown'}`,
+                    title: `OFFICIAL REPO: ${json.name}`,
+                    body: `Main Language: ${json.language || 'JavaScript'}`,
                     mediaType: 1,
                     thumbnailUrl: json.owner.avatar_url,
                     sourceUrl: "https://github.com/prologinac/lamar"
@@ -57,11 +51,7 @@ async function githubCommand(sock, chatId, message, args) {
 
     } catch (error) {
         console.error('GitHub Error:', error.message);
-        await sock.sendMessage(chatId, { 
-            text: `*🚫 ASCENSION FAILED 🚫*\n\n` +
-                  `*REASON:* REPOSITORY NOT FOUND\n` +
-                  `*CHECK:* owner/repo format.`
-        }, { quoted: message });
+        await sock.sendMessage(chatId, { text: "❌ Failed to fetch repository data." });
     }
 }
 
