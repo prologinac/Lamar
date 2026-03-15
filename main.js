@@ -1,4 +1,5 @@
 const apkCommand = require('./commands/apk');
+const lyricsCommand = require('./commands/lyrics);
 const surahCommand = require('./commands/surah');
 const updateCommand = require('./commands/update');
 const pttCommand = require('./commands/ptt');
@@ -58,7 +59,6 @@ const { startTrivia, answerTrivia } = require('./commands/trivia');
 const { complimentCommand } = require('./commands/compliment');
 const { insultCommand } = require('./commands/insult');
 const { eightBallCommand } = require('./commands/eightball');
-const { lyricsCommand } = require('./commands/lyrics');
 const { dareCommand } = require('./commands/dare');
 const { truthCommand } = require('./commands/truth');
 const { clearCommand } = require('./commands/clear');
