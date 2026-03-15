@@ -14,80 +14,87 @@ const {
     delay 
 } = require("@whiskeysockets/baileys")
 
-// Keep-Alive Server
+// Keep-Alive for Render
 const port = process.env.PORT || 3000
 http.createServer((req, res) => {
     res.writeHead(200);
-    res.end('Madrin Bot Session Engine Active');
+    res.end('Madrin Bot Engine Active');
 }).listen(port);
 
-async function startBot() {
-    if (!fs.existsSync('./session')) fs.mkdirSync('./session');
-
-    // 1. Restore Logic for Render
+async function startMadrin() {
+    let { version } = await fetchLatestBaileysVersion()
+    
+    // Auto-restore session from Render Environment Variable
     if (process.env.SESSION_ID && !fs.existsSync('./session/creds.json')) {
+        if (!fs.existsSync('./session')) fs.mkdirSync('./session');
         try {
             let stringId = process.env.SESSION_ID.trim();
             if (stringId.includes('~')) stringId = stringId.split('~')[1];
             const decoded = Buffer.from(stringId, 'base64').toString('utf-8');
             fs.writeFileSync('./session/creds.json', decoded);
-            console.log(chalk.green("✅ Madrin Session Restored from Render Variables."));
-        } catch (e) { console.log("Session restore error"); }
+            console.log(chalk.green("✅ Session restored from Render Environment."));
+        } catch (e) { console.log("Restore error:", e); }
     }
 
     const { state, saveCreds } = await useMultiFileAuthState(`./session`)
-    const { version } = await fetchLatestBaileysVersion()
 
-    const client = makeWASocket({
+    const Madrin = makeWASocket({
         version,
-        printQRInTerminal: false,
         logger: pino({ level: 'silent' }),
-        browser: ["Chrome", "Windows", "114.0.5735.198"],
+        printQRInTerminal: false,
+        browser: ["Windows", "Chrome", "114.0.5735.198"], // Matches your old working code
         auth: {
             creds: state.creds,
             keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" })),
-        }
+        },
+        markOnlineOnConnect: false,
+        syncFullHistory: false
     })
 
-    // 2. Pairing Code Logic
-    if (!client.authState.creds.registered) {
-        const settings = require('./settings');
-        const phoneNumber = settings.ownerNumber.replace(/[^0-9]/g, '');
-        console.log(chalk.yellow(`⏳ Requesting Pairing Code for Madrin: ${phoneNumber}`));
-        await delay(6000);
+    // PAIRING LOGIC (Using your old successful method)
+    if (!Madrin.authState.creds.registered) {
+        let targetNumber = Array.isArray(global.ownerNumber) ? global.ownerNumber[0] : global.ownerNumber;
+        targetNumber = targetNumber.replace(/[^0-9]/g, '');
+
+        console.log(chalk.yellow(`⏳ Handshaking for: ${targetNumber}...`));
+        
+        // This 15s delay is what triggers the notification on your phone
+        await delay(15000); 
+
         try {
-            let code = await client.requestPairingCode(phoneNumber);
+            let code = await Madrin.requestPairingCode(targetNumber);
             code = code?.match(/.{1,4}/g)?.join("-") || code;
-            console.log(chalk.black(chalk.bgCyan(` MADRIN PAIRING CODE: `)), chalk.white.bold(code));
-        } catch (e) { console.log("Pairing error", e); }
+            console.log(chalk.black(chalk.bgGreen(` Madrin Pairing Code: `)), chalk.white.bold(code));
+        } catch (error) {
+            console.error(chalk.red(`Pairing Failed:`), error.message);
+        }
     }
 
-    client.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect } = update
-        if (connection === 'open') {
-            console.log(chalk.bgCyan.black(" ✅ MADRIN IS LIVE! "));
-
-            // 3. Generate and Send Session ID
+    Madrin.ev.on('connection.update', async (s) => {
+        const { connection, lastDisconnect } = s;
+        if (connection == "open") {
+            console.log(chalk.bgCyan.black(` ✅ MADRIN IS ONLINE! `));
+            
+            // GENERATE AND SEND SESSION ID TO YOUR WHATSAPP
             const credsData = fs.readFileSync('./session/creds.json');
             const base64Session = Buffer.from(credsData).toString('base64');
             const fullSessionId = `MADRIN~${base64Session}`;
 
-            const welcomeMsg = `*✅ MADRIN (Blackthrone) CONNECTED!*\n\nUse this *SESSION_ID* in Render to keep the bot active 24/7:\n\n\`${fullSessionId}\``;
-            
-            await client.sendMessage(client.user.id, { text: welcomeMsg });
-            console.log(chalk.cyan("📩 Session ID sent to your WhatsApp number!"));
+            const msg = `*✅ MADRIN CONNECTED!*\n\nCopy this code to your Render Environment Variables for 24/7 uptime:\n\n\`${fullSessionId}\``;
+            await Madrin.sendMessage(Madrin.user.id, { text: msg });
         }
-        
         if (connection === 'close') {
-            const reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
-            if (reason !== DisconnectReason.loggedOut) startBot();
+            let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
+            if (reason !== DisconnectReason.loggedOut) {
+                startMadrin();
+            }
         }
-    })
+    });
 
-    client.ev.on('creds.update', saveCreds)
-    client.ev.on('messages.upsert', async chatUpdate => {
-        await handleMessages(client, chatUpdate, true);
-    })
+    Madrin.ev.on('creds.update', saveCreds);
+    Madrin.ev.on('messages.upsert', async chatUpdate => {
+        await handleMessages(Madrin, chatUpdate, true);
+    });
 }
 
-startBot();
+startMadrin();
