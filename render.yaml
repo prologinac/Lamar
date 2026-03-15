@@ -1,13 +1,20 @@
 services:
   - type: web
-    name: whatsapp-bot
-    env: node
+    name: madrin-md-bot
+    runtime: node
     plan: free
     buildCommand: npm install
     startCommand: node index.js
-    healthCheckPath: / # Add this line
     envVars:
+      - key: SESSION_ID
+        sync: false # You will paste your long code in the dashboard
+      - key: MODE
+        value: public
+      - key: OWNER_NUMBER
+        value: "255780309253"
+      - key: BOT_NAME
+        value: "balckthrone"
       - key: PORT
-        value: 10000
+        value: "3000"
       - key: NODE_VERSION
-        value: 20.x
+        value: "20.x"
