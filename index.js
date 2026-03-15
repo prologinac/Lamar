@@ -40,7 +40,8 @@ async function startBot() {
         version,
         printQRInTerminal: false,
         logger: require('pino')({ level: 'silent' }),
-        browser: ["Windows", "Chrome", "20.0.04"], // Matches your photo
+        // UPDATED BROWSER ARRAY TO MATCH SCREENSHOT
+        browser: ["Chrome", "Windows", "114.0.5735.198"], 
         auth: {
             creds: state.creds,
             keys: makeCacheableSignalKeyStore(state.keys, require('pino')({ level: "fatal" })),
@@ -49,7 +50,7 @@ async function startBot() {
 
     client.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect } = update
-        if (connection === 'open') console.log(chalk.green("✅ Connected to WhatsApp!"));
+        if (connection === 'open') console.log(chalk.green("✅ Connected: Google Chrome (Windows)"));
         if (connection === 'close') {
             const shouldRestart = (new Boom(lastDisconnect?.error)?.output?.statusCode) !== DisconnectReason.loggedOut;
             if (shouldRestart) startBot();
