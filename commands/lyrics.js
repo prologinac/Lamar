@@ -1,8 +1,7 @@
 const axios = require('axios');
 
 async function lyricsCommand(sock, chatId, message, args) {
-    // 1. Join args and clean up whitespace
-    let songQuery = args.join(' ').trim();
+    const songQuery = args.join(' ').trim();
 
     if (!songQuery) {
         return await sock.sendMessage(chatId, { 
@@ -13,34 +12,41 @@ async function lyricsCommand(sock, chatId, message, args) {
     try {
         await sock.sendMessage(chatId, { react: { text: '🔍', key: message.key } });
 
-        // 2. Using a different, highly stable lyrics API
-        // This one is specifically for developers and very reliable for English songs
-        const response = await axios.get(`https://lyrist.vercel.app/api/${encodeURIComponent(songQuery)}`);
-        const data = response.data;
+        // 1. Search for the song to get the ID/Details
+        // LRCLIB is one of the most stable free lyrics databases
+        const searchUrl = `https://lrclib.net/api/search?q=${encodeURIComponent(songQuery)}`;
+        const response = await axios.get(searchUrl);
 
-        // 3. Check if the API actually returned lyrics
-        if (!data || !data.lyrics) {
+        if (!response.data || response.data.length === 0) {
             return await sock.sendMessage(chatId, { 
-                text: `❌ Lyrics not found for: *${songQuery}*\n\nTry adding the artist name, e.g., \`.lyrics The Weeknd Blinding Lights\`` 
+                text: `❌ No lyrics found for: *${songQuery}*` 
             }, { quoted: message });
         }
 
+        // 2. Take the first result
+        const songData = response.data[0];
+        
+        // 3. Check for plain lyrics (synced lyrics are also available as 'syncedLyrics')
+        const lyricsBody = songData.plainLyrics || "Lyrics content is empty for this track.";
+
         // 4. Construct the Message
         let lyricsMessage = `🎵 *LYRICS FINDER* 🎵\n\n`;
-        lyricsMessage += `✨ *Title:* ${data.title || 'Unknown'}\n`;
-        lyricsMessage += `👤 *Artist:* ${data.artist || 'Unknown'}\n`;
+        lyricsMessage += `✨ *Title:* ${songData.trackName}\n`;
+        lyricsMessage += `👤 *Artist:* ${songData.artistName}\n`;
+        lyricsMessage += `💿 *Album:* ${songData.albumName || 'N/A'}\n`;
         lyricsMessage += `───────────────────\n\n`;
-        lyricsMessage += data.lyrics;
+        lyricsMessage += lyricsBody;
 
-        // 5. Send the response
-        // Note: Lyrist API doesn't always provide an image, so we send text
+        // 5. Send it
+        // We use text here because LRCLIB doesn't provide images, 
+        // making the response extremely fast.
         await sock.sendMessage(chatId, { text: lyricsMessage }, { quoted: message });
 
         await sock.sendMessage(chatId, { react: { text: '🎶', key: message.key } });
 
     } catch (error) {
         console.error('Lyrics Error:', error.message);
-        await sock.sendMessage(chatId, { text: '❌ System error: The lyrics service is currently unavailable.' });
+        await sock.sendMessage(chatId, { text: '❌ Service is currently down. Please try again later.' });
     }
 }
 
